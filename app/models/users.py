@@ -8,9 +8,9 @@ class User(Base):
     __tablename__="user"
     id =Column(Integer, primary_key=True, nullable=False, index=True)
     name = Column(String(100),nullable=False)
-    email=Column(String(100), nullable=False)
+    email=Column(String(100), unique=True, nullable=False)
     password=Column(String(200),nullable=False)
-    user_name=Column(String(50), nullable= False)
+    user_name=Column(String(50),  unique=True, nullable= False)
     role= Column(Enum('ADMIN','USER'),nullable=False)
     image= Column(String(500), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
