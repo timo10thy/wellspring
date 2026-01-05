@@ -13,7 +13,7 @@ router = APIRouter(prefix='/user', tags= ['User'])
 db_dependency= Annotated[Session, Depends(get_db)]
 
 
-@router.post('/create/user', response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post('/user/create', response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
     try:
         
