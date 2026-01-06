@@ -6,13 +6,14 @@ from app.models.users import User
 from app.models.products import Products
 from app.middlewares.admin import admin_validation
 from typing import Annotated
+from sqlalchemy.orm import relationship
 import logging
 import bcrypt
 
 logger=logging.getLogger(__name__)
 router= APIRouter(prefix='/product',tags=['Product'])
 
-@router.post('/product/create',response_model=ProductResponse,status_code=status.HTTP_201_CREATED)
+@router.post('/create',response_model=ProductResponse,status_code=status.HTTP_201_CREATED)
 def product_create(product_data:ProductCreate, db:Session=Depends(get_db),current_admin: User = Depends(admin_validation)):
     try:
         current_product = db.query(Products).filter(Products.name == product_data.name).first()

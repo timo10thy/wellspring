@@ -1,8 +1,8 @@
+import os
+import sys
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
-import os
-import sys
 
 # -------------------------------------------------
 # Make sure /app is on PYTHONPATH
@@ -10,23 +10,30 @@ import sys
 sys.path.append("/app")
 
 # -------------------------------------------------
-# Alembic Config
+# Alembic config
 # -------------------------------------------------
 config = context.config
 
+# Apply logging config from alembic.ini
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # -------------------------------------------------
-# IMPORT BASE AND MODELS (THIS IS CRITICAL)
+# Override sqlalchemy.url with environment variable
+# -------------------------------------------------
+database_url = os.getenv("DATABASE_URL")
+if not database_url:
+    raise RuntimeError("DATABASE_URL is not set in environment")
+config.set_main_option("sqlalchemy.url", database_url)
+
+# -------------------------------------------------
+# Import your Base and models (critical for autogenerate)
 # -------------------------------------------------
 from app.models.base import Base
 from app.models.users import User
+from app.models.products import Products
+from app.models.stock import Stocks
 
-
-# -------------------------------------------------
-# Metadata for autogenerate
-# -------------------------------------------------
 target_metadata = Base.metadata
 
 # -------------------------------------------------
@@ -40,7 +47,6 @@ def run_migrations_offline():
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
-
     with context.begin_transaction():
         context.run_migrations()
 
@@ -53,19 +59,17 @@ def run_migrations_online():
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            compare_type=True,
+            compare_type=True,  # Detect column type changes
         )
-
         with context.begin_transaction():
             context.run_migrations()
 
 # -------------------------------------------------
-# Run
+# Run migrations
 # -------------------------------------------------
 if context.is_offline_mode():
     run_migrations_offline()

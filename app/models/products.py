@@ -3,16 +3,6 @@ from app.models.base import Base
 from sqlalchemy import Column, Integer, String, DateTime, Enum, func,Numeric,Boolean
 from sqlalchemy.orm import relationship
 
-# id → identity
-# name → what is being sold
-# price → current selling price
-# is_active → can this be sold?
-# created_at
-# updated_at
-# Optional (but realistic):
-# expires_at
-# sku or internal code
-# description
 
 class Products(Base):
     __tablename__='products'
@@ -27,5 +17,5 @@ class Products(Base):
         server_default=func.now(), 
         onupdate=func.now, nullable= False
     )
-
-
+    
+    stocks = relationship("Stocks",back_populates="product",cascade="all, delete")

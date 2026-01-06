@@ -5,6 +5,7 @@ from app.routes.user_route import router as user_route
 from app.routes.auth import router as auth
 from app.routes.admin import router as admin
 from app.routes.product import router as products
+from app.routes.stock import router as stock
 from app.routes.basemodel import engine
 from app.models.base import Base
 
@@ -29,3 +30,4 @@ app.include_router(user_route)
 app.include_router(auth)
 app.include_router(admin)
 app.include_router(products)
+app.include_router(stock)
