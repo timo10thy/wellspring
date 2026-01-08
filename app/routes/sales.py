@@ -19,16 +19,11 @@ db_dependency = Annotated[Session, Depends(get_db)]
     response_model=SaleResponse,
     status_code=status.HTTP_201_CREATED
 )
-def create_sales(
-    sales_data: SaleCreate,
-    db: db_dependency,
-    current_user: User = Depends(AuthMiddleware)
+def create_sales(sales_data: SaleCreate,db: db_dependency,current_user: User = Depends(AuthMiddleware)
 ):
     try:
        
-        stock = db.query(Stocks).filter(
-            Stocks.id == sales_data.stock_id
-        ).first()
+        stock = db.query(Stocks).filter(Stocks.id == sales_data.stock_id).first()
 
         if not stock:
             raise HTTPException(
@@ -64,18 +59,20 @@ def create_sales(
                 detail="Product for this stock not found"
             )
 
-        
+        if sales_data.selling_price > product.price:
+            raise HTTPException(
+                status_code=409,
+                detail = "Can't sell above the product price"
+            )
+
         if sales_data.selling_price < product.price:
             if current_user.role != "ADMIN":
                 raise HTTPException(
                     status_code=403,
                     detail="Selling below product price requires admin approval"
                 )
-
        
-        total_amount = (
-            sales_data.quantity_sold * sales_data.selling_price
-        )
+        total_amount = (sales_data.quantity_sold * sales_data.selling_price)
 
         sale = Sales(
             stock_id=stock.id,
