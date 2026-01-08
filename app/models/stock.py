@@ -16,3 +16,4 @@ class Stocks(Base):
         onupdate=func.now(), nullable= False
     )
     product = relationship("Products", back_populates="stocks")
+    sales = relationship("Sales", back_populates="stock", cascade="all, delete")

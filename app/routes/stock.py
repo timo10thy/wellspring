@@ -14,11 +14,7 @@ import logging
 logger=logging.getLogger(__name__)
 router=APIRouter(prefix='/stock',tags=['Stock'])
 @router.post('/create', response_model=StockResponse, status_code=status.HTTP_201_CREATED)
-def stock_create(
-    stock_data: StockCreate,
-    db: Session = Depends(get_db),
-    current_admin: User = Depends(admin_validation)
-):
+def stock_create(stock_data: StockCreate,db: Session = Depends(get_db),current_admin: User = Depends(admin_validation)):
     
     if stock_data.quantity <= 0:
         raise HTTPException(

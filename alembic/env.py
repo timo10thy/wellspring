@@ -33,6 +33,7 @@ from app.models.base import Base
 from app.models.users import User
 from app.models.products import Products
 from app.models.stock import Stocks
+from app.models.sales import Sales
 
 target_metadata = Base.metadata
 
