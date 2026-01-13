@@ -17,6 +17,14 @@ class ProductResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+class ProductDetailResponse(BaseModel):
+    id:int
+    name:str
+    price:float
+    is_active:bool
+    description:str
+    current_stock_quantity: int
+
 
 
 

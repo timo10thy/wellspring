@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, status, HTTPException
-from app.schema.product_schema import ProductCreate,ProductResponse
+from app.schema.product_schema import ProductCreate,ProductResponse,ProductDetailResponse
 from sqlalchemy.orm import Session
 from app.routes.basemodel import get_db
 from app.models.users import User
 from app.models.products import Products
 from app.middlewares.admin import admin_validation
+from app.middlewares.auth import AuthMiddleware
 from typing import Annotated
 from sqlalchemy.orm import relationship
 import logging
@@ -33,5 +34,34 @@ def product_create(product_data:ProductCreate, db:Session=Depends(get_db),curren
         raise
     except Exception:
         raise HTTPException(status_code=500,detail='Fail to create product')
+@router.get("/{product_id}/details",response_model=ProductDetailResponse,status_code=status.HTTP_200_OK)
+def get_product_details(product_id: int,db: Session = Depends(get_db),current_user: User = Depends(AuthMiddleware)):
+    product = db.query(Products).filter(Products.id == product_id).first()
 
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    
+    if current_user.role == "USER" and not product.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+   
+    current_stock_quantity = sum(
+        stock.quantity for stock in product.stocks
+    )
+
+    return {
+        "id": product.id,
+        "name": product.name,
+        "price": product.price,
+        "is_active": product.is_active,
+        "description": product.description,
+        "current_stock_quantity": current_stock_quantity
+    }
 
