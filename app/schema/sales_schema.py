@@ -16,3 +16,12 @@ class SaleResponse(BaseModel):
     selling_price: float
     total_amount: float
     created_at: datetime
+
+class ReceiptResponse(BaseModel):
+    sale_id: int
+    sold_by: str          
+    product_name: str
+    quantity_sold: int
+    unit_price: float
+    total_amount: float
+    created_at: datetime

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from app.models.base import Base
 from sqlalchemy import Column, Integer, String, DateTime, Enum, func
 from app.models import enum
-
+from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__="user"
@@ -17,3 +17,8 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True),server_default=func.now(),server_onupdate=func.now(),  
     nullable=False
 )
+
+
+    sold_sales = relationship("Sales",foreign_keys="Sales.sold_by",back_populates="sold_by_user")
+
+    created_sales = relationship("Sales",foreign_keys="Sales.created_by",back_populates="created_by_user")

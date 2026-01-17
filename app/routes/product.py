@@ -34,6 +34,9 @@ def product_create(product_data:ProductCreate, db:Session=Depends(get_db),curren
         raise
     except Exception:
         raise HTTPException(status_code=500,detail='Fail to create product')
+    
+
+    
 @router.get("/{product_id}/details",response_model=ProductDetailResponse,status_code=status.HTTP_200_OK)
 def get_product_details(product_id: int,db: Session = Depends(get_db),current_user: User = Depends(AuthMiddleware)):
     product = db.query(Products).filter(Products.id == product_id).first()

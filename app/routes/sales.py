@@ -8,17 +8,13 @@ from app.models.sales import Sales
 from app.models.stock import Stocks
 from app.models.products import Products
 from app.middlewares.auth import AuthMiddleware
-from app.schema.sales_schema import SaleCreate, SaleResponse
+from app.schema.sales_schema import SaleCreate, SaleResponse,ReceiptResponse
 import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/sales", tags=["Sales"])
 db_dependency = Annotated[Session, Depends(get_db)]
-@router.post(
-    "/create",
-    response_model=SaleResponse,
-    status_code=status.HTTP_201_CREATED
-)
+@router.post("/create",response_model=SaleResponse,status_code=status.HTTP_201_CREATED)
 def create_sales(sales_data: SaleCreate,db: db_dependency,current_user: User = Depends(AuthMiddleware)
 ):
     try:
@@ -79,10 +75,10 @@ def create_sales(sales_data: SaleCreate,db: db_dependency,current_user: User = D
             sold_by=current_user.id,
             quantity_sold=sales_data.quantity_sold,
             selling_price=sales_data.selling_price,
-            total_amount=total_amount
+            total_amount=total_amount,
+            created_by=current_user.id
         )
 
-        
         stock.quantity -= sales_data.quantity_sold
 
         db.add(sale)
@@ -100,3 +96,23 @@ def create_sales(sales_data: SaleCreate,db: db_dependency,current_user: User = D
             status_code=500,
             detail="Failed to create sale"
         )
+
+@router.get('/{sales_id}/salesreceipt',response_model=ReceiptResponse,status_code=status.HTTP_200_OK)
+def receipt(sales_id:int,db:Session=Depends(get_db)):
+    sales=db.query(Sales).filter(Sales.id == sales_id).first()
+    if not sales:
+        raise HTTPException(status_code=404,detail='Sales dont exist')
+    
+    staff = db.query(User).filter(User.id == sales.sold_by).first()
+    stock = sales.stock
+    product = stock.product
+    return {
+        "sale_id": sales.id,
+        "sold_by": staff.user_name,
+        "product_name": product.name,
+        "quantity_sold": sales.quantity_sold,
+        "unit_price": sales.selling_price,
+        "total_amount": sales.total_amount,
+        "created_at": sales.created_at
+    }
+        
