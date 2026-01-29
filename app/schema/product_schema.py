@@ -25,6 +25,10 @@ class ProductDetailResponse(BaseModel):
     description:str
     current_stock_quantity: int
 
+class ProductUpdate(BaseModel):
+    price:float
+
+
 
 
 

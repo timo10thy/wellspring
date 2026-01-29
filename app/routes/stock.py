@@ -15,7 +15,7 @@ import logging
 
 logger=logging.getLogger(__name__)
 router=APIRouter(prefix='/stock',tags=['Stock'])
-@router.post('/create', response_model=StockConsumptionReport, status_code=status.HTTP_201_CREATED)
+@router.post('/create', response_model=StockResponse, status_code=status.HTTP_201_CREATED)
 def stock_create(stock_data: StockCreate,db: Session = Depends(get_db),current_admin: User = Depends(admin_validation)):
     
     if stock_data.quantity <= 0:
@@ -105,5 +105,49 @@ def check_consumption(stock_id: int,db: Session = Depends(get_db),current_admin:
         "estimated_days_remaining": estimated_days_remaining
     }
 
+@router.post('/add/stock', response_model=StockResponse, status_code=status.HTTP_201_CREATED)
+def new_stock(
+    stock_data: StockCreate,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(admin_validation)
+):
+    
+    product = db.query(Products).filter(Products.id == stock_data.product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product does not exist")
+
+    
+    existing_stock = db.query(Stocks).filter(
+        Stocks.product_id == stock_data.product_id,
+        Stocks.cost_price == stock_data.cost_price,
+        Stocks.expiry_date == stock_data.expiry_date
+    ).first()
+
+    if existing_stock:
+        
+        existing_stock.quantity += stock_data.quantity
+        db.add(existing_stock)
+        db.commit()
+        db.refresh(existing_stock)
+        return existing_stock
+    else:
+        new_stock = Stocks(
+            product_id=stock_data.product_id,
+            quantity=stock_data.quantity,
+            cost_price=stock_data.cost_price,
+            expiry_date=stock_data.expiry_date
+        )
+        db.add(new_stock)
+        db.commit()
+        db.refresh(new_stock)
+        return new_stock
 
 
+
+def get_total_stock_quantity(product_id: int, db: Session):
+    all_stocks = db.query(Stocks).filter(Stocks.product_id == product_id).all()
+    return sum(stock.quantity for stock in all_stocks)
+
+
+    
+    

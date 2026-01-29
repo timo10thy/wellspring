@@ -15,7 +15,7 @@ class Products(Base):
     updated_at = Column(
         DateTime(timezone=True), 
         server_default=func.now(), 
-        onupdate=func.now, nullable= False
+        onupdate=func.now(), nullable= False
     )
     
     stocks = relationship("Stocks",back_populates="product",cascade="all, delete")

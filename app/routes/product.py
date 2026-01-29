@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status, HTTPException
-from app.schema.product_schema import ProductCreate,ProductResponse,ProductDetailResponse
+from app.schema.product_schema import ProductCreate,ProductResponse,ProductDetailResponse,ProductUpdate
 from sqlalchemy.orm import Session
 from app.routes.basemodel import get_db
 from app.models.users import User
@@ -68,3 +68,25 @@ def get_product_details(product_id: int,db: Session = Depends(get_db),current_us
         "current_stock_quantity": current_stock_quantity
     }
 
+@router.put("/{product_id}/update",response_model=ProductUpdate,status_code=status.HTTP_200_OK)
+def update_product(product_id:int,product_data: ProductUpdate, db:Session = Depends(get_db),current_user: User =Depends(AuthMiddleware)):
+    product = db.query(Products).filter(Products.id == product_id).first()
+    if not product:
+        raise HTTPException(
+            status_code=403,
+            detail='Product not found'
+        )
+    if current_user.role == "USER":
+        raise HTTPException(
+            status_code=status.HTTP_403,
+            detail="Forbidden: Admin only"
+        )
+    product.price = product_data.price
+    db.commit()
+    db.refresh(product)
+
+    return product_data
+      
+        
+# @router.put("/{product_id}/update",response_model=ProductUpdate,status_code=status.HTTP_200_OK)
+# def 
