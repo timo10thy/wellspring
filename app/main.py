@@ -33,4 +33,3 @@ app.include_router(admin)
 app.include_router(products)
 app.include_router(stock)
 app.include_router(sale)
-

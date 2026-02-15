@@ -1,12 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,constr,validator
+import re
 from datetime import datetime
 from typing import Optional
 
 class ProductCreate(BaseModel):
-    name:str
+    name:constr(min_length=3, max_length=20, strip_whitespace=True)
     price:float
     is_active:bool=True
     description:str
+
+    @validator("name")
+    def normalize_name(cls, v: str) -> str:
+        return re.sub(r"\s+", "", v)
+
 
 class ProductResponse(BaseModel):
     id: int
